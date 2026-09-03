@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Store Rating App</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6fb;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #4b5f91;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            font-size: 16px;
+        }
+
+        main {
+            padding: 40px 5%;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 48px;
+            margin-bottom: 40px;
+            color: #333;
+        }
+
+        #storesContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 35px;
+        }
+
+        .store-card {
+            background: white;
+            border-radius: 22px;
+            padding: 35px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            transition: transform 0.2s ease;
+        }
+
+        .store-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .store-card h2 {
+            color: #4b5f91;
+            font-size: 34px;
+            margin-bottom: 30px;
+        }
+
+        .store-info {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .store-info strong {
+            margin-right: 6px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #ddd;
+            margin: 35px 0;
+        }
+
+        .rating-label {
+            display: block;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        select {
+            width: 100%;
+            padding: 18px;
+            font-size: 18px;
+            border: 1px solid #ccc;
+            border-radius: 14px;
+            background: white;
+            margin-bottom: 18px;
+        }
+
+        button {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 14px;
+            background: #4b5f91;
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #3d4f7d;
+        }
+
+        .message {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            min-height: 25px;
+        }
+
+        .selected-rating {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 22px;
+            margin-top: 50px;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+            font-size: 20px;
+        }
+
+        footer {
+            margin-top: 50px;
+            padding: 20px;
+            background: #4b5f91;
+            color: white;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .page-title {
+                font-size: 34px;
+            }
+
+            .store-card h2 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>⭐ Store Rating App</h1>
+        <p>Browse stores and submit your rating</p>
+    </header>
+
+
+    <main>
+
+        <h1 class="page-title">Available Stores</h1>
+
+        <div id="storesContainer">
+            <p class="loading">Loading stores...</p>
+        </div>
+
+    </main>
+
+
+    <footer>
+        © 2026 Store Rating App | Developed for Academic Project
+    </footer>
+
+
+    <script>
+
+        // =========================
+        // LOAD ALL STORES
+        // =========================
+
+        async function loadStores() {
+
+            const storesContainer =
+                document.getElementById("storesContainer");
+
+            try {
+
+                const response =
+                    await fetch("/stores");
+
+                if (!response.ok) {
+                    throw new Error(
+                        "Unable to fetch stores"
+                    );
+                }
+
+                const stores =
+                    await response.json();
+
+                storesContainer.innerHTML = "";
+
+                stores.forEach(store => {
+
+                    const storeCard =
+                        document.createElement("div");
+
+                    storeCard.className =
+                        "store-card";
+
+                    storeCard.innerHTML = `
+
+                        <h2>${store.name}</h2>
+
+                        <div class="store-info">
+                            <strong>Email:</strong>
+                            ${store.email}
+                        </div>
+
+                        <div class="store-info">
+                            <strong>Address:</strong>
+                            ${store.address}
+                        </div>
+
+                        <hr>
+
+                        <label
+                            class="rating-label"
+                            for="rating-${store.id}"
+                        >
+                            Rate this store:
+                        </label>
+
+                        <select id="rating-${store.id}">
+
+                            <option value="">
+                                Select Rating
+                            </option>
+
+                            <option value="1">
+                                ⭐ 1 - Poor
+                            </option>
+
+                            <option value="2">
+                                ⭐⭐ 2 - Fair
+                            </option>
+
+                            <option value="3">
+                                ⭐⭐⭐ 3 - Good
+                            </option>
+
+                            <option value="4">
+                                ⭐⭐⭐⭐ 4 - Very Good
+                            </option>
+
+                            <option value="5">
+                                ⭐⭐⭐⭐⭐ 5 - Excellent
+                            </option>
+
+                        </select>
+
+                        <button
+                            onclick="submitRating(${store.id})"
+                        >
+                            Submit Rating
+                        </button>
+
+                        <div
+                            id="message-${store.id}"
+                            class="message"
+                        >
+                        </div>
+
+                        <div
+                            id="selected-rating-${store.id}"
+                            class="selected-rating"
+                        >
+                        </div>
+
+                    `;
+
+                    storesContainer.appendChild(
+                        storeCard
+                    );
+
+                });
+
+            } catch (error) {
+
+                console.error(error);
+
+                storesContainer.innerHTML = `
+                    <p class="error">
+                        ❌ Unable to load stores.
+                    </p>
+                `;
+            }
+        }
+
+
+        // =========================
+        // SUBMIT OR UPDATE RATING
+        // =========================
+
+        async function submitRating(storeId) {
+
+            const ratingElement =
+                document.getElementById(
+                    `rating-${storeId}`
+                );
+
+            const messageElement =
+                document.getElementById(
+                    `message-${storeId}`
+                );
+
+            const selectedRatingElement =
+                document.getElementById(
+                    `selected-rating-${storeId}`
+                );
+
+            const rating =
+                ratingElement.value;
+
+
+            // Check if rating is selected
+
+            if (!rating) {
+
+                messageElement.style.color =
+                    "orange";
+
+                messageElement.textContent =
+                    "⚠ Please select a rating first!";
+
+                return;
+            }
+
+
+            try {
+
+                // Get token saved after login
+
+                const token =
+                    localStorage.getItem("token");
+
+
+                // Check login token
+
+                if (!token) {
+
+                    messageElement.style.color =
+                        "red";
+
+                    messageElement.textContent =
+                        "❌ Please login first!";
+
+                    return;
+                }
+
+
+                // Send rating to backend
+
+                const response =
+                    await fetch("/ratings", {
+
+                        method: "POST",
+
+                        headers: {
+
+                            "Content-Type":
+                                "application/json",
+
+                            "Authorization":
+                                `Bearer ${token}`
+
+                        },
+
+                        body: JSON.stringify({
+
+                            store_id:
+                                storeId,
+
+                            rating:
+                                Number(rating)
+
+                        })
+
+                    });
+
+
+                const data =
+                    await response.json();
+
+
+                // If backend returns an error
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.message ||
+                        "Unable to submit rating"
+                    );
+
+                }
+
+
+                // Show success message
+
+                messageElement.style.color =
+                    "green";
+
+                messageElement.textContent =
+                    "✓ " + data.message;
+
+
+                // Show selected rating
+
+                selectedRatingElement.textContent =
+                    "Your Rating: " +
+                    "⭐".repeat(
+                        Number(rating)
+                    );
+
+
+                // Reset dropdown
+
+                ratingElement.value = "";
+
+
+            } catch (error) {
+
+                console.error(
+                    "Rating error:",
+                    error
+                );
+
+                messageElement.style.color =
+                    "red";
+
+                messageElement.textContent =
+                    "❌ " +
+                    (error.message ||
+                        "Failed to submit rating. Try again.");
+
+            }
+
+        }
+
+
+        // =========================
+        // LOAD STORES WHEN PAGE OPENS
+        // =========================
+
+        loadStores();
+
+    </script>
+
+</body>
+
+</html>
